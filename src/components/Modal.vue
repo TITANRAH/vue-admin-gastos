@@ -19,7 +19,7 @@ import Alerta from './Alerta.vue';
 // la forma de pasar un string a entero es asi para este caso 
 // @input="$emit('update:nombre', +$event.target.value)" ponuendo un +
 
-const emit = defineEmits(['ocultar-modal','udpate:nombre', 'update:cantidad', 'update:categoria'])
+const emit = defineEmits(['ocultar-modal', 'guardar-gasto','udpate:nombre', 'update:cantidad', 'update:categoria'])
 const error = ref('')
 const props = defineProps({
     modal:{
@@ -49,12 +49,20 @@ const {cantidad, categoria, nombre } = props
 
 if([nombre, cantidad, categoria].includes('')) {
     error.value= 'Todos los campos son obligatorios'
+    setTimeout(()=>{
+        error.value=''
+    }, 3000)
     return
 }
 if(cantidad <= 0) {
     error.value= 'Cantidad no válida'
+    setTimeout(()=>{
+        error.value=''
+    }, 3000)
     return
 }
+
+emit('guardar-gasto')
 }
 </script>
 <template>
@@ -76,7 +84,7 @@ if(cantidad <= 0) {
                         id="nombre" 
                         placeholder="Añade el Nombre del Gasto"
                         :value="nombre"
-                        @input="$emit('update:nombre', +$event.target.value)"
+                        @input="$emit('update:nombre', $event.target.value)"
                         >
                 </div>
                 <div class="campo">
@@ -86,7 +94,7 @@ if(cantidad <= 0) {
                         id="nombre" 
                         placeholder="Añade la cantidad del gasto, ejm 300"
                         :value="cantidad"
-                        @input="$emit('update:cantidad', $event.target.value)"
+                        @input="$emit('update:cantidad', +$event.target.value)"
                         >
                 </div>
                 <div class="campo">

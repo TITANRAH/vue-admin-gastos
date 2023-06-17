@@ -4,8 +4,9 @@ import ControlPresupuesto from './components/Control-presupuesto.vue';
 import Presupuesto from './components/Presupuesto.vue';
 import { ref, reactive } from 'vue';
 import iconoNuevoGasto from './assets/img/nuevo-gasto.svg'
-import Modal from './components/Modal.vue';
-
+import Modal from './components/Modal.vue'
+import Gastos from './components/Gastos.vue'
+import { generarId } from './helpers'
 
 const presupuesto = ref(0);
 const disponible = ref(0)
@@ -16,6 +17,7 @@ const gasto = reactive({
   id: null,
   fecha: Date.now()
 })
+const gastos = ref([])
 
 const definirPresupuesto = (cantidad) => {
   presupuesto.value = cantidad
@@ -45,6 +47,30 @@ const ocultarModal = () => {
     }, 300)
 }
 
+// creo mi funcion aca pero es emitida por un componente hijo 
+// por loque le paso la funcion al componente en este caso modal 
+// donde habra un botoin que la accione
+const guardarGasto = () => {
+  console.log('guardar gasto desde app');
+  console.log(gasto);
+
+  gastos.value.push({
+    ...gasto,
+    id: generarId(),
+  })
+
+  ocultarModal()
+
+  // reiniciar form
+  Object.assign(gasto, {
+    nombre: '',
+    cantidad: '',
+    categoria: '',
+    id: null,
+    fecha: Date.now()
+  })
+}
+
 // FIN MODAL
 
 </script>
@@ -63,19 +89,24 @@ const ocultarModal = () => {
 
     </header>
 
+    <div class="listado-gastos contenedor">
+
+      <h2>{{gastos.length > 0 ? 'Gastos' : 'No hay gastos'}}</h2>
+
+      <Gastos 
+      v-for="gasto in gastos"
+      :key="gasto.id"
+      :gasto="gasto"
+      />
+    </div>
+
     <main v-if="presupuesto > 0">
       <div class="crear-gasto">
         <img :src="iconoNuevoGasto" alt="icono nuevo gasto" @click="mostrarModal">
       </div>
 
-      <Modal 
-        v-if="modal.mostrar" 
-        @ocultar-modal="ocultarModal"
-        :modal="modal"
-        v-model:nombre="gasto.nombre"
-        v-model:cantidad="gasto.cantidad"
-        v-model:categoria="gasto.categoria"
-        />
+      <Modal v-if="modal.mostrar" @ocultar-modal="ocultarModal" @guardar-gasto="guardarGasto" :modal="modal"
+        v-model:nombre="gasto.nombre" v-model:cantidad="gasto.cantidad" v-model:categoria="gasto.categoria" />
     </main>
 
   </div>
@@ -161,5 +192,14 @@ header h1 {
 .crear-gasto img {
   width: 5rem;
   cursor: pointer;
+}
+
+.listado-gastos{
+margin-top: 15rem;
+}
+
+.listado-gastos h2{
+  font-weight: 900;
+  color: var(--gris-oscuro);
 }
 </style>
