@@ -1,13 +1,13 @@
 <script setup>
 
+import { computed, onMounted, reactive, ref, watch } from 'vue';
+import iconoNuevoGasto from './assets/img/nuevo-gasto.svg';
 import ControlPresupuesto from './components/Control-presupuesto.vue';
+import Filtros from './components/Filtros.vue';
+import Gastos from './components/Gastos.vue';
+import Modal from './components/Modal.vue';
 import Presupuesto from './components/Presupuesto.vue';
-import { ref, reactive, watch, computed, onMounted } from 'vue';
-import iconoNuevoGasto from './assets/img/nuevo-gasto.svg'
-import Modal from './components/Modal.vue'
-import Filtros from './components/Filtros.vue'
-import Gastos from './components/Gastos.vue'
-import { generarId } from './helpers'
+import { generarId } from './helpers';
 
 const presupuesto = ref(0);
 const disponible = ref(0);
