@@ -1,6 +1,6 @@
-        <script setup>
-        
-        </script>
+<script setup>
+
+</script>
 <template>
     <div>
         <h2>Filtros</h2>
@@ -8,6 +8,4 @@
 </template>
 
 
-<style lang="scss" scoped>
- 
-</style>
+<style lang="scss" scoped></style>

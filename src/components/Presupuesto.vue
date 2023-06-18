@@ -17,9 +17,9 @@ const definirPresupuesto = () => {
 
         return
     }
-        // emision al padre
+    // emision al padre
     emit('definir-presupuesto', presupuesto.value)
-  
+
 }
 
 </script>
@@ -31,15 +31,8 @@ const definirPresupuesto = () => {
         </Alerta>
         <div class="campo">
             <label for="">Definir Presupuesto</label>
-            <input 
-            type="number" 
-            class="nuevo-presupuesto" 
-            id="nuevo-presupuesto" 
-            placeholder="Añade tu presupuesto"
-            v-model.number="presupuesto" 
-            min="0" 
-            
-            />
+            <input type="number" class="nuevo-presupuesto" id="nuevo-presupuesto" placeholder="Añade tu presupuesto"
+                v-model.number="presupuesto" min="0" />
         </div>
 
         <input type="submit" value="Definir presupuesto">
@@ -50,7 +43,7 @@ const definirPresupuesto = () => {
 <style scoped>
 .presupuesto {
     width: 100%;
-    
+
 }
 
 .campo {

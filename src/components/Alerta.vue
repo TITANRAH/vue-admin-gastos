@@ -9,8 +9,7 @@
 
 
 <style lang="scss" scoped>
-
-.alerta{
+.alerta {
     padding: 1rem;
     font-weight: 900;
     text-transform: uppercase;

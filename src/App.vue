@@ -2,15 +2,17 @@
 
 import ControlPresupuesto from './components/Control-presupuesto.vue';
 import Presupuesto from './components/Presupuesto.vue';
-import { ref, reactive, watch } from 'vue';
+import { ref, reactive, watch, computed, onMounted } from 'vue';
 import iconoNuevoGasto from './assets/img/nuevo-gasto.svg'
 import Modal from './components/Modal.vue'
+import Filtros from './components/Filtros.vue'
 import Gastos from './components/Gastos.vue'
 import { generarId } from './helpers'
 
 const presupuesto = ref(0);
 const disponible = ref(0);
 const gastado = ref(0);
+const filtro = ref('');
 const gasto = reactive({
   nombre: '',
   cantidad: '',
@@ -23,11 +25,32 @@ const gastos = ref([])
 watch(gastos, () => {
   const totalGastado = gastos.value.reduce((total, gasto) => gasto.cantidad + total, 0)
   gastado.value = totalGastado;
-
   disponible.value = presupuesto.value - totalGastado;
+
+  localStorage.setItem('gastos', JSON.stringify(gastos.value))
 
 }, {
   deep: true
+})
+
+watch(presupuesto, () => {
+  localStorage.setItem('presupuesto', presupuesto.value)
+})
+
+onMounted(() => {
+  const presupuestoStorage = localStorage.getItem('presupuesto')
+
+  if (presupuestoStorage) {
+    presupuesto.value = Number(presupuestoStorage)
+    disponible.value = Number(presupuestoStorage)
+  }
+
+  const gastosStorage = localStorage.getItem('gastos')
+
+  if (gastosStorage) {
+    gastos.value = JSON.parse(gastosStorage)
+  }
+
 })
 
 
@@ -76,7 +99,7 @@ const guardarGasto = () => {
   if (gasto.id) {
     const { id } = gasto;
     const i = gastos.value.findIndex((gasto => gasto.id == id))
-    gastos.value[i] = {...gasto}
+    gastos.value[i] = { ...gasto }
   } else {
     console.log('guardar gasto desde app');
     console.log(gasto);
@@ -102,6 +125,13 @@ const seleccionarGasto = (id) => {
   mostrarModal()
 }
 
+const eliminarGasto = () => {
+  if (confirm('Eliminar?'))
+    gastos.value = gastos.value.filter(gastoState => gastoState.id != gasto.id)
+  ocultarModal()
+
+}
+
 
 const reiniciarStateGasto = () => {
   Object.assign(gasto, {
@@ -117,6 +147,23 @@ const reiniciarStateGasto = () => {
 
 // FIN MODAL
 
+
+const gastosFiltrados = computed(() => {
+  // si hay algo en filtro filtra si no el arreglo sera gastos.value lo que devuelva esta 
+  // propiedad computada
+  if (filtro.value) {
+    return gastos.value.filter(gasto => gasto.categoria === filtro.value)
+  }
+  return gastos.value;
+})
+
+const resetApp = () => {
+
+  if (confirm('¿Deseas reiniciar presupuestos y gastos?')) {
+    gastos.value = []
+    presupuesto.value = 0
+  }
+}
 </script>
 
 <template >
@@ -130,33 +177,29 @@ const reiniciarStateGasto = () => {
         <!-- si el presupuesto es igual a cero que muestre presupuesto -->
         <Presupuesto v-if="presupuesto === 0" @definir-presupuesto="definirPresupuesto" />
         <!-- si es valido muestra control presupuesto -->
-        <ControlPresupuesto v-else :presupuesto="presupuesto" :disponible="disponible" :gastado="gastado" />
+        <ControlPresupuesto v-else :presupuesto="presupuesto" :disponible="disponible" :gastado="gastado"
+          @reset-app="resetApp" />
       </div>
 
     </header>
 
     <div class="listado-gastos contenedor">
 
-      <h2>{{ gastos.length > 0 ? 'Gastos' : 'No hay gastos' }}</h2>
+      <h2>{{ gastosFiltrados.length > 0 ? 'Gastos' : 'No hay gastos' }}</h2>
 
-      <Gastos v-for="gasto in gastos" :key="gasto.id" :gasto="gasto" @seleccionar-gasto="seleccionarGasto" />
+      <Gastos v-for="gasto in gastosFiltrados" :key="gasto.id" :gasto="gasto" @seleccionar-gasto="seleccionarGasto" />
     </div>
 
     <main v-if="presupuesto > 0">
+
+      <Filtros v-model:filtro="filtro" />
       <div class="crear-gasto">
         <img :src="iconoNuevoGasto" alt="icono nuevo gasto" @click="mostrarModal">
       </div>
 
-      <Modal 
-        v-if="modal.mostrar" 
-        @ocultar-modal="ocultarModal" 
-        @guardar-gasto="guardarGasto" 
-        :modal="modal"
-        :disponible="disponible" 
-        :id="gasto.id"
-        v-model:nombre="gasto.nombre" 
-        v-model:cantidad="gasto.cantidad"
-        v-model:categoria="gasto.categoria" />
+      <Modal v-if="modal.mostrar" @ocultar-modal="ocultarModal" @guardar-gasto="guardarGasto"
+        @eliminar-gasto="eliminarGasto" :modal="modal" :disponible="disponible" :id="gasto.id"
+        v-model:nombre="gasto.nombre" v-model:cantidad="gasto.cantidad" v-model:categoria="gasto.categoria" />
     </main>
 
   </div>

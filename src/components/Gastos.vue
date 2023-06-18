@@ -1,32 +1,32 @@
 <script setup>
 
-import {formatearCantidad, formatearFecha} from '../helpers/index'
+import { formatearCantidad, formatearFecha } from '../helpers/index'
 import IconoAhorro from '../assets/img/icono_ahorro.svg'
-    import IconoCasa from '../assets/img/icono_casa.svg'
-    import IconoComida from '../assets/img/icono_comida.svg'
-    import IconoGastos from '../assets/img/icono_gastos.svg'
-    import IconoOcio from '../assets/img/icono_ocio.svg'
-    import IconoSalud from '../assets/img/icono_salud.svg'
-    import IconoSuscripciones from '../assets/img/icono_suscripciones.svg'
+import IconoCasa from '../assets/img/icono_casa.svg'
+import IconoComida from '../assets/img/icono_comida.svg'
+import IconoGastos from '../assets/img/icono_gastos.svg'
+import IconoOcio from '../assets/img/icono_ocio.svg'
+import IconoSalud from '../assets/img/icono_salud.svg'
+import IconoSuscripciones from '../assets/img/icono_suscripciones.svg'
 
-    // en el select tengo una serie de nombres por ejemplo comida 
-    // al seleccionar comida, me creo un diccionario con iconos segun gasto 
-    // al pulsar en el select por ejemplpo selecciono comida 
-    // y digo abajo que la imagen a mostrar sera el diccionario en el nombre de la seleccion 
-    // entonces si selecciono comida, y digo que la iamagen es diccionario[gasto.categoria]
-    // eso equivale a decir la imagen es diccionarioIconos en la posicion que diga comida y 
-    // pintara el icono de comida
-    const diccionarioIconos = {
-        ahorro : IconoAhorro,
-        comida : IconoComida,
-        casa : IconoCasa,
-        gastos : IconoGastos,
-        ocio : IconoOcio,
-        salud : IconoSalud,
-        suscripciones : IconoSuscripciones
-    }
+// en el select tengo una serie de nombres por ejemplo comida 
+// al seleccionar comida, me creo un diccionario con iconos segun gasto 
+// al pulsar en el select por ejemplpo selecciono comida 
+// y digo abajo que la imagen a mostrar sera el diccionario en el nombre de la seleccion 
+// entonces si selecciono comida, y digo que la iamagen es diccionario[gasto.categoria]
+// eso equivale a decir la imagen es diccionarioIconos en la posicion que diga comida y 
+// pintara el icono de comida
+const diccionarioIconos = {
+    ahorro: IconoAhorro,
+    comida: IconoComida,
+    casa: IconoCasa,
+    gastos: IconoGastos,
+    ocio: IconoOcio,
+    salud: IconoSalud,
+    suscripciones: IconoSuscripciones
+}
 
-    const props = defineProps({
+const props = defineProps({
     gasto: {
         type: Object,
         required: true
@@ -39,38 +39,32 @@ defineEmits(['seleccionar-gasto'])
 </script>
 <template>
     <div class="gasto sombra">
-       <div class="contenido">
-        <img 
-            :src="diccionarioIconos[gasto.categoria]"
-            alt="Icono gasto"
-            class="icono">
-        <div class="detalles">
-            <p class="categoria">{{ gasto.categoria }}</p>
-            <p 
-            class="nombre"
-            @click="$emit('seleccionar-gasto',gasto.id)"
-            >{{ gasto.nombre }}</p>
-            <p class="fecha"> 
-               <span>{{formatearFecha(gasto.fecha)}}</span> 
-            </p>
+        <div class="contenido">
+            <img :src="diccionarioIconos[gasto.categoria]" alt="Icono gasto" class="icono">
+            <div class="detalles">
+                <p class="categoria">{{ gasto.categoria }}</p>
+                <p class="nombre" @click="$emit('seleccionar-gasto', gasto.id)">{{ gasto.nombre }}</p>
+                <p class="fecha">
+                    <span>{{ formatearFecha(gasto.fecha) }}</span>
+                </p>
+            </div>
         </div>
-       </div>
 
-       <p class="cantidad">
-        {{ formatearCantidad(gasto.cantidad)  }}
-       </p>
+        <p class="cantidad">
+            {{ formatearCantidad(gasto.cantidad) }}
+        </p>
     </div>
 </template>
 
 
 <style scoped>
-
 .gasto {
-    display:flex;
+    display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 2rem;
 }
+
 .contenido {
     display: flex;
     align-items: center;
@@ -83,15 +77,15 @@ defineEmits(['seleccionar-gasto'])
 }
 
 .detalles p {
-margin: 0 0 1rem 0
+    margin: 0 0 1rem 0
 }
 
 .categoria {
 
-color: var(--gris);
-font-size: 1.2rem;
-text-transform: uppercase;
-font-weight: 900;
+    color: var(--gris);
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    font-weight: 900;
 }
 
 .nombre {
@@ -106,7 +100,7 @@ font-weight: 900;
     font-weight: 900;
 }
 
-.fecha span{
+.fecha span {
 
     font-weight: 400;
 }

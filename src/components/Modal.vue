@@ -1,5 +1,5 @@
 <script setup >
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import cerrarModal from '../assets/img/cerrar.svg'
 import Alerta from './Alerta.vue';
 
@@ -19,7 +19,7 @@ import Alerta from './Alerta.vue';
 // la forma de pasar un string a entero es asi para este caso 
 // @input="$emit('update:nombre', +$event.target.value)" ponuendo un +
 
-const emit = defineEmits(['ocultar-modal', 'guardar-gasto', "update:nombre", 'update:cantidad', 'update:categoria'])
+const emit = defineEmits(['ocultar-modal', 'guardar-gasto', "update:nombre", 'update:cantidad', 'update:categoria', 'eliminar-gasto'])
 const error = ref('')
 const props = defineProps({
     modal: {
@@ -73,7 +73,7 @@ const agregarGasto = () => {
     }
 
     if (id) {
-        if(cantidad > old + disponible){
+        if (cantidad > old + disponible) {
 
             // si la cantidad a gastar actual es mayor a la cantidad antigua mas lo que dispones
             error.value = 'Has excedido el presupuesto'
@@ -97,6 +97,11 @@ const agregarGasto = () => {
 
     emit('guardar-gasto')
 }
+
+const idEditing = computed(() => {
+
+    return props.id
+})
 </script>
 <template>
     <div class="modal">
@@ -106,7 +111,7 @@ const agregarGasto = () => {
 
         <div class="contenedor contenedor-formulario" :class="[modal.animar ? 'animar' : 'cerrar']">
             <form class="nuevo-gasto" @submit.prevent="agregarGasto">
-                <legend>Añadir Gasto</legend>
+                <legend>{{ idEditing ? 'Editar gasto' : 'Guardar gasto' }}</legend>
                 <Alerta v-if="error">{{ error }}</Alerta>
                 <div class="campo">
                     <label for="nombre">Nombre Gasto: </label>
@@ -132,14 +137,30 @@ const agregarGasto = () => {
                     </select>
                 </div>
 
-                <input type="submit" value="Añadir Gasto">
+                <input type="submit" :value="id ? 'Guardar Cambios' : 'Añadir Gasto'">
             </form>
+
+            <button v-if="idEditing" type="button" class="btn-eliminar" @click="$emit('eliminar-gasto')">
+                Eliminar Gasto
+            </button>
         </div>
     </div>
 </template>
 
 
 <style scoped>
+.btn-eliminar {
+    padding: 1rem;
+    width: 100%;
+    background-color: #ef4444;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--blanco);
+    margin-top: 10rem;
+    border: none;
+    cursor: pointer;
+}
+
 .modal {
     position: absolute;
     background-color: rgb(0 0 0 / 0.9);
