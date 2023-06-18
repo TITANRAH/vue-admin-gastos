@@ -2,14 +2,15 @@
 
 import ControlPresupuesto from './components/Control-presupuesto.vue';
 import Presupuesto from './components/Presupuesto.vue';
-import { ref, reactive } from 'vue';
+import { ref, reactive, watch } from 'vue';
 import iconoNuevoGasto from './assets/img/nuevo-gasto.svg'
 import Modal from './components/Modal.vue'
 import Gastos from './components/Gastos.vue'
 import { generarId } from './helpers'
 
 const presupuesto = ref(0);
-const disponible = ref(0)
+const disponible = ref(0);
+const gastado = ref(0);
 const gasto = reactive({
   nombre: '',
   cantidad: '',
@@ -18,6 +19,18 @@ const gasto = reactive({
   fecha: Date.now()
 })
 const gastos = ref([])
+
+watch(gastos, () => {
+  const totalGastado = gastos.value.reduce((total, gasto) => gasto.cantidad + total, 0)
+  gastado.value = totalGastado;
+
+  disponible.value = presupuesto.value - totalGastado;
+
+}, {
+  deep: true
+})
+
+
 
 const definirPresupuesto = (cantidad) => {
   presupuesto.value = cantidad
@@ -47,22 +60,52 @@ const ocultarModal = () => {
     }, 300)
 }
 
+watch(modal, () => {
+  if (!modal.mostrar) {
+    reiniciarStateGasto()
+  }
+}, {
+  deep: true
+})
+
 // creo mi funcion aca pero es emitida por un componente hijo 
 // por loque le paso la funcion al componente en este caso modal 
 // donde habra un botoin que la accione
 const guardarGasto = () => {
-  console.log('guardar gasto desde app');
-  console.log(gasto);
 
-  gastos.value.push({
-    ...gasto,
-    id: generarId(),
-  })
+  if (gasto.id) {
+    const { id } = gasto;
+    const i = gastos.value.findIndex((gasto => gasto.id == id))
+    gastos.value[i] = {...gasto}
+  } else {
+    console.log('guardar gasto desde app');
+    console.log(gasto);
+
+    gastos.value.push({
+      ...gasto,
+      id: generarId(),
+    })
+  }
+
 
   ocultarModal()
+  reiniciarStateGasto()
 
-  // reiniciar form
+
+}
+
+const seleccionarGasto = (id) => {
+  // el gasto a editar es el primer objeto que encuentre donde el id de parametro es igual 
+  // al gasto id
+  const gastoEditar = gastos.value.filter(gasto => gasto.id === id)[0]
+  Object.assign(gasto, gastoEditar)
+  mostrarModal()
+}
+
+
+const reiniciarStateGasto = () => {
   Object.assign(gasto, {
+
     nombre: '',
     cantidad: '',
     categoria: '',
@@ -71,12 +114,15 @@ const guardarGasto = () => {
   })
 }
 
+
 // FIN MODAL
 
 </script>
 
 <template >
-  <div>
+  <!-- se pueden usar clases condicionales,  en este caso la condicion va a la derecha
+  en este caso la clase fijar se mostrara cuando la propiedad mostrar del objeto modal sea true -->
+  <div :class="{ fijar: modal.mostrar }">
     <header class="contenedor-header">
       <h1>Planificador de gastos</h1>
 
@@ -84,20 +130,16 @@ const guardarGasto = () => {
         <!-- si el presupuesto es igual a cero que muestre presupuesto -->
         <Presupuesto v-if="presupuesto === 0" @definir-presupuesto="definirPresupuesto" />
         <!-- si es valido muestra control presupuesto -->
-        <ControlPresupuesto :presupuesto="presupuesto" :disponible="disponible" v-else />
+        <ControlPresupuesto v-else :presupuesto="presupuesto" :disponible="disponible" :gastado="gastado" />
       </div>
 
     </header>
 
     <div class="listado-gastos contenedor">
 
-      <h2>{{gastos.length > 0 ? 'Gastos' : 'No hay gastos'}}</h2>
+      <h2>{{ gastos.length > 0 ? 'Gastos' : 'No hay gastos' }}</h2>
 
-      <Gastos 
-      v-for="gasto in gastos"
-      :key="gasto.id"
-      :gasto="gasto"
-      />
+      <Gastos v-for="gasto in gastos" :key="gasto.id" :gasto="gasto" @seleccionar-gasto="seleccionarGasto" />
     </div>
 
     <main v-if="presupuesto > 0">
@@ -105,8 +147,16 @@ const guardarGasto = () => {
         <img :src="iconoNuevoGasto" alt="icono nuevo gasto" @click="mostrarModal">
       </div>
 
-      <Modal v-if="modal.mostrar" @ocultar-modal="ocultarModal" @guardar-gasto="guardarGasto" :modal="modal"
-        v-model:nombre="gasto.nombre" v-model:cantidad="gasto.cantidad" v-model:categoria="gasto.categoria" />
+      <Modal 
+        v-if="modal.mostrar" 
+        @ocultar-modal="ocultarModal" 
+        @guardar-gasto="guardarGasto" 
+        :modal="modal"
+        :disponible="disponible" 
+        :id="gasto.id"
+        v-model:nombre="gasto.nombre" 
+        v-model:cantidad="gasto.cantidad"
+        v-model:categoria="gasto.categoria" />
     </main>
 
   </div>
@@ -149,6 +199,11 @@ h1 {
 h2 {
   font-size: 3rem;
 
+}
+
+.fijar {
+  overflow: hidden;
+  height: 100vh;
 }
 
 header {
@@ -194,11 +249,11 @@ header h1 {
   cursor: pointer;
 }
 
-.listado-gastos{
-margin-top: 15rem;
+.listado-gastos {
+  margin-top: 15rem;
 }
 
-.listado-gastos h2{
+.listado-gastos h2 {
   font-weight: 900;
   color: var(--gris-oscuro);
 }

@@ -19,50 +19,83 @@ import Alerta from './Alerta.vue';
 // la forma de pasar un string a entero es asi para este caso 
 // @input="$emit('update:nombre', +$event.target.value)" ponuendo un +
 
-const emit = defineEmits(['ocultar-modal', 'guardar-gasto','udpate:nombre', 'update:cantidad', 'update:categoria'])
+const emit = defineEmits(['ocultar-modal', 'guardar-gasto', "update:nombre", 'update:cantidad', 'update:categoria'])
 const error = ref('')
 const props = defineProps({
-    modal:{
+    modal: {
         type: Object,
         required: true
     },
-    nombre:{
+    nombre: {
         type: String,
         required: true
     },
-    cantidad:{
+    cantidad: {
         type: [String, Number],
         required: true
     },
-    
-    categoria:{
+
+    categoria: {
         type: String,
         required: true
-    }
-    
+    },
+    disponible: {
+        type: Number,
+        required: true
+    },
+    id: {
+        type: [String, null],
+        required: true
+    },
+
 })
 
-const agregarGasto = () =>{
-//   validar que no vengan campos vacios
+const old = props.cantidad;
 
-const {cantidad, categoria, nombre } = props
+const agregarGasto = () => {
+    //   validar que no vengan campos vacios
 
-if([nombre, cantidad, categoria].includes('')) {
-    error.value= 'Todos los campos son obligatorios'
-    setTimeout(()=>{
-        error.value=''
-    }, 3000)
-    return
-}
-if(cantidad <= 0) {
-    error.value= 'Cantidad no válida'
-    setTimeout(()=>{
-        error.value=''
-    }, 3000)
-    return
-}
+    const { cantidad, categoria, nombre, disponible, id } = props
 
-emit('guardar-gasto')
+    if ([nombre, cantidad, categoria].includes('')) {
+        error.value = 'Todos los campos son obligatorios'
+        setTimeout(() => {
+            error.value = ''
+        }, 3000)
+        return
+    }
+    if (cantidad <= 0) {
+        error.value = 'Cantidad no válida'
+        setTimeout(() => {
+            error.value = ''
+        }, 3000)
+        return
+    }
+
+    if (id) {
+        if(cantidad > old + disponible){
+
+            // si la cantidad a gastar actual es mayor a la cantidad antigua mas lo que dispones
+            error.value = 'Has excedido el presupuesto'
+            setTimeout(() => {
+                error.value = ''
+            }, 3000)
+            return
+        }
+    } else {
+        // si lo que voy a gastar es mayor a lo disponible 
+        if (cantidad > disponible) {
+            error.value = 'Has excedido el presupuesto'
+            setTimeout(() => {
+                error.value = ''
+            }, 3000)
+            return
+        }
+    }
+
+
+
+    emit('guardar-gasto')
 }
 </script>
 <template>
@@ -72,46 +105,30 @@ emit('guardar-gasto')
         </div>
 
         <div class="contenedor contenedor-formulario" :class="[modal.animar ? 'animar' : 'cerrar']">
-            <form 
-                class="nuevo-gasto"
-                @submit.prevent="agregarGasto">
+            <form class="nuevo-gasto" @submit.prevent="agregarGasto">
                 <legend>Añadir Gasto</legend>
                 <Alerta v-if="error">{{ error }}</Alerta>
                 <div class="campo">
                     <label for="nombre">Nombre Gasto: </label>
-                    <input 
-                        type="text" 
-                        id="nombre" 
-                        placeholder="Añade el Nombre del Gasto"
-                        :value="nombre"
-                        @input="$emit('update:nombre', $event.target.value)"
-                        >
+                    <input type="text" id="nombre" placeholder="Añade el Nombre del Gasto" :value="nombre"
+                        @input="$emit('update:nombre', $event.target.value)">
                 </div>
                 <div class="campo">
                     <label for="cantidad">Cantidad: </label>
-                    <input 
-                        type="number" 
-                        id="nombre" 
-                        placeholder="Añade la cantidad del gasto, ejm 300"
-                        :value="cantidad"
-                        @input="$emit('update:cantidad', +$event.target.value)"
-                        >
+                    <input type="number" id="cantidad" placeholder="Añade la cantidad del gasto, ejm 300" :value="cantidad"
+                        @input="$emit('update:cantidad', +$event.target.value)">
                 </div>
                 <div class="campo">
                     <label for="cantidad">Categoría: </label>
-                    <select 
-                        id="categoria"
-                        :value="categoria"
-                        @input="$emit('update:categoria', $event.target.value)"
-                        >
+                    <select id="categoria" :value="categoria" @input="$emit('update:categoria', $event.target.value)">
                         <option value="">-- Seleccione --</option>
                         <option value="ahorro">Ahorro</option>
                         <option value="comida">Comida</option>
                         <option value="casa">Casa</option>
-                        <option value="gastos-varios">Gastos Varios</option>
+                        <option value="gastos">Gastos Varios</option>
                         <option value="ocio">Ocio</option>
                         <option value="salud">Salud</option>
-                        <option value="suscripcion">Suscripcion</option>
+                        <option value="suscripciones">Suscripcion</option>
                     </select>
                 </div>
 
@@ -142,6 +159,7 @@ emit('guardar-gasto')
     width: 3rem;
     cursor: pointer;
 }
+
 .contenedor-formulario {
     transition-property: all;
     transition-duration: 300ms;
@@ -153,6 +171,7 @@ emit('guardar-gasto')
 
     opacity: 1;
 }
+
 .contenedor-formulario.cerrar {
 
     opacity: 0;
@@ -165,7 +184,7 @@ emit('guardar-gasto')
     gap: 2rem;
 }
 
-.nuevo-gasto legend{
+.nuevo-gasto legend {
     text-align: center;
     color: var(--blanco);
     font-size: 3rem;
@@ -187,16 +206,17 @@ emit('guardar-gasto')
     font-size: 2.2rem;
 }
 
-.nuevo-gasto label{
+.nuevo-gasto label {
     color: var(--blanco);
     font-size: 3rem;
 }
 
-.nuevo-gasto input[type="submit"]{
+.nuevo-gasto input[type="submit"] {
     background-color: var(--azul);
     color: var(--blanco);
     font-weight: 700;
     cursor: pointer;
 }
+
 /* FIN FORM */
 </style>
